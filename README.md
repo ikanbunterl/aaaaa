@@ -16,11 +16,13 @@ rpg_game/
 │   ├── __init__.py
 │   ├── basic_commands.py      # /start, /status, dll
 │   ├── battle_commands.py     # /attack, /heal, /cast
-│   ├── inventory_commands.py  # /inventory, /equip
-│   ├── shop_commands.py       # /shop, /buy
+│   ├── inventory_commands.py  # /inventory, /equip, /use
+│   ├── shop_commands.py       # /shop, /buy, /sell
 │   ├── crafting_commands.py   # /craft
 │   ├── quest_commands.py      # /quest
 │   ├── save_commands.py       # /save, /load
+│   ├── job_commands.py        # /job, /work, /jobstatus
+│   ├── upgrade_commands.py    # /upgrade
 │   └── cheat_commands.py      # /give, /set, /god
 ├── data/
 │   ├── __init__.py
@@ -51,8 +53,8 @@ def register_new_feature_commands(handler):
         # Logic here
         return "✅ New feature command executed!"
     
-    # Register command with aliases
-    handler.register_command('/mycommand', my_new_command, aliases=['/mc'])
+    # Register command dengan aliases dan kategori
+    handler.register_command('/mycommand', my_new_command, aliases=['/mc'], category='newfeature')
 ```
 
 ### Step 2: Import dan register di `ui/ui_manager.py`
@@ -64,6 +66,48 @@ register_new_feature_commands(self.command_handler)
 
 ### Step 3: Tambahkan ke help jika perlu
 Edit `/help` command di `basic_commands.py` untuk menampilkan command baru.
+
+## 🎮 New Features
+
+### 1. Job System
+Sistem kerja yang memungkinkan pemain untuk meningkatkan skill dan mendapatkan gold.
+
+#### Commands:
+- `/job` - Lihat job yang tersedia
+- `/job lumberjack` - Mulai bekerja sebagai lumberjack
+- `/job miner` - Mulai bekerja sebagai miner
+- `/job farmer` - Mulai bekerja sebagai farmer
+- `/work` - Lakukan pekerjaan berdasarkan job yang dipilih
+- `/jobstatus` - Lihat status dan level job saat ini
+
+#### Job Details:
+- **Lumberjack**: Memotong pohon untuk mendapatkan wood dan material lainnya. Meningkatkan attack secara perlahan.
+- **Miner**: Menambang ore untuk mendapatkan material langka. Meningkatkan defense secara perlahan.
+- **Farmer**: Menanam dan memanen tanaman. Meningkatkan max HP secara perlahan.
+
+#### Job Levels:
+- Setiap job memiliki sistem level XP sendiri
+- Semakin tinggi level, semakin besar reward yang didapat
+- Bonus stat unik untuk setiap job
+
+### 2. Upgrade System
+Sistem untuk meningkatkan kekuatan item senjata dan armor.
+
+#### Commands:
+- `/upgrade list` - Lihat item yang bisa diupgrade
+- `/upgrade <item_name>` - Upgrade item tertentu (membutuhkan material dan gold)
+
+#### Upgrade Requirements:
+- Material spesifik tergantung item
+- Gold sebagai biaya upgrade
+- Stat meningkat saat upgrade
+
+### 3. Use Command
+Command baru untuk equip item secara langsung.
+
+#### Commands:
+- `/use <item_name>` - Equip weapon, armor, atau accessory
+- `/equip <item_name>` - Alternatif command untuk equip
 
 ## 📊 Data Structures
 
@@ -88,11 +132,12 @@ Edit `/help` command di `basic_commands.py` untuk menampilkan command baru.
 {
     "name": "Heal Potion",
     "type": "consumable",  # consumable, weapon, armor, material, accessory
-    "effect": "heal_30",
+    "effect": "heal_30",   # Hanya untuk consumable
     "price": 25,
     "rarity": "common",
-    "atk": 10,           # Hanya untuk weapon
-    "defense": 5         # Hanya untuk armor
+    "atk": 10,             # Hanya untuk weapon
+    "defense": 5,          # Hanya untuk armor
+    "required_job_level": 3 # Opsional, level job minimum untuk menggunakan item
 }
 ```
 
@@ -101,7 +146,7 @@ Edit `/help` command di `basic_commands.py` untuk menampilkan command baru.
 {
     "id": "kill_5_monsters",
     "name": "Slay 5 Monsters",
-    "target": "any",     # any, specific_monster_name, level, gold, boss
+    "target": "any",       # any, specific_monster_name, level, gold, boss
     "goal": 5,
     "reward": {"gold": 100, "item": "Heal Potion"}
 }
@@ -119,28 +164,38 @@ Edit `/help` command di `basic_commands.py` untuk menampilkan command baru.
 - Mengelola semua command
 - Handle aliases
 - Route command ke fungsi yang benar
+- Handle categorization untuk help system
 
 ### Player
 - Menyimpan semua data karakter
 - Handle stat calculations
 - Equipment management
+- Job system integration
+- Upgrade system integration
 
 ## 🧪 Testing Commands
 Command yang bisa digunakan untuk testing:
 - `/start Hero` - Mulai game
+- `/job lumberjack` - Pilih job lumberjack
+- `/work` - Lakukan pekerjaan
+- `/upgrade list` - Lihat item yang bisa diupgrade
+- `/use Iron Sword` - Equip senjata
 - `/give Heal Potion 10` - Tambah item (cheat)
 - `/set level 10` - Set level (cheat)
 - `/god` - Mode dewa (cheat)
-
-## 🤝 Contributing
-1. Buat feature branch: `git checkout -b feature/nama-fitur`
-2. Tambahkan command di folder `commands/`
-3. Import di `ui_manager.py`
-4. Commit dan push
-5. Buat Pull Request
 
 ## 📝 Notes Penting
 - Jangan hardcode values di command handler, gunakan `data.game_data.py`
 - Pastikan semua command return string error yang informatif
 - Gunakan emoji konsisten untuk feedback visual
 - Simpan progress ke file JSON untuk persistensi
+- Tambahkan kategori saat register command untuk sistem help yang lebih baik
+
+## 🤝 Contributing
+1. Buat feature branch: `git checkout -b feature/nama-fitur`
+2. Tambahkan command di folder `commands/`
+3. Import di `ui_manager.py`
+4. Update `basic_commands.py` jika perlu menambahkan help
+5. Commit dan push
+6. Buat Pull Request
+```
