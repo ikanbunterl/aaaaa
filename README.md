@@ -1,2 +1,146 @@
-# aaaaa
-aaaaa
+# Epic RPG Adventure - Developer Guide
+
+## 📋 Overview
+Game RPG berbasis teks command-driven menggunakan Python dan CustomTkinter. Dibangun dengan arsitektur modular untuk kemudahan kolaborasi dan pengembangan.
+
+## 🏗️ Project Structure
+```
+rpg_game/
+├── main.py                    # Entry point
+├── core/
+│   ├── __init__.py
+│   ├── game_engine.py         # Game logic utama
+│   ├── command_handler.py     # Handler semua command
+│   └── player.py             # Class Player
+├── commands/
+│   ├── __init__.py
+│   ├── basic_commands.py      # /start, /status, dll
+│   ├── battle_commands.py     # /attack, /heal, /cast
+│   ├── inventory_commands.py  # /inventory, /equip
+│   ├── shop_commands.py       # /shop, /buy
+│   ├── crafting_commands.py   # /craft
+│   ├── quest_commands.py      # /quest
+│   ├── save_commands.py       # /save, /load
+│   └── cheat_commands.py      # /give, /set, /god
+├── data/
+│   ├── __init__.py
+│   ├── game_data.py          # MONSTERS, ITEMS, dll
+│   └── achievements.py       # Achievement definitions
+├── ui/
+│   ├── __init__.py
+│   └── ui_manager.py         # GUI
+└── utils/
+    ├── __init__.py
+    └── helpers.py            # Fungsi bantu
+```
+
+## 🚀 Getting Started
+1. Pastikan Python 3.7+ terinstall
+2. Install dependencies: `pip install customtkinter`
+3. Jalankan: `python main.py`
+
+## 🧩 Adding New Commands
+
+### Step 1: Buat file command baru
+```python
+# commands/new_feature_commands.py
+def register_new_feature_commands(handler):
+    def my_new_command(arg):
+        if not handler.game.player:
+            return "❌ You need to start a game first."
+        # Logic here
+        return "✅ New feature command executed!"
+    
+    # Register command with aliases
+    handler.register_command('/mycommand', my_new_command, aliases=['/mc'])
+```
+
+### Step 2: Import dan register di `ui/ui_manager.py`
+```python
+from commands.new_feature_commands import register_new_feature_commands
+# Di __init__():
+register_new_feature_commands(self.command_handler)
+```
+
+### Step 3: Tambahkan ke help jika perlu
+Edit `/help` command di `basic_commands.py` untuk menampilkan command baru.
+
+## 📊 Data Structures
+
+### Monster Format
+```python
+{
+    "name": "Goblin",
+    "hp": 30,
+    "atk": 8,
+    "exp": 20,
+    "gold": 10,
+    "min_level": 1,
+    "max_level": 3,
+    "rarity": "common",
+    "drops": [{"item": "Iron Ore", "chance": 0.3}],
+    "boss": True  # Opsional, default False
+}
+```
+
+### Item Format
+```python
+{
+    "name": "Heal Potion",
+    "type": "consumable",  # consumable, weapon, armor, material, accessory
+    "effect": "heal_30",
+    "price": 25,
+    "rarity": "common",
+    "atk": 10,           # Hanya untuk weapon
+    "defense": 5         # Hanya untuk armor
+}
+```
+
+### Quest Format
+```python
+{
+    "id": "kill_5_monsters",
+    "name": "Slay 5 Monsters",
+    "target": "any",     # any, specific_monster_name, level, gold, boss
+    "goal": 5,
+    "reward": {"gold": 100, "item": "Heal Potion"}
+}
+```
+
+## 🔧 Core Components
+
+### GameEngine
+- Menyimpan state permainan (`self.player`, `self.current_enemy`, dll)
+- Handle battle mechanics
+- Save/load game
+- Achievement checking
+
+### CommandHandler
+- Mengelola semua command
+- Handle aliases
+- Route command ke fungsi yang benar
+
+### Player
+- Menyimpan semua data karakter
+- Handle stat calculations
+- Equipment management
+
+## 🧪 Testing Commands
+Command yang bisa digunakan untuk testing:
+- `/start Hero` - Mulai game
+- `/give Heal Potion 10` - Tambah item (cheat)
+- `/set level 10` - Set level (cheat)
+- `/god` - Mode dewa (cheat)
+
+## 🤝 Contributing
+1. Buat feature branch: `git checkout -b feature/nama-fitur`
+2. Tambahkan command di folder `commands/`
+3. Import di `ui_manager.py`
+4. Commit dan push
+5. Buat Pull Request
+
+## 📝 Notes Penting
+- Jangan hardcode values di command handler, gunakan `data.game_data.py`
+- Pastikan semua command return string error yang informatif
+- Gunakan emoji konsisten untuk feedback visual
+- Simpan progress ke file JSON untuk persistensi
