@@ -1,6 +1,6 @@
 ### **File: `README.md` (Updated)**
 
-```markdown
+
 # Epic RPG Adventure - Developer Guide
 
 ## 📋 Overview
