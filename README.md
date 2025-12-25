@@ -1,3 +1,6 @@
+### **File: `README.md` (Updated)**
+
+```markdown
 # Epic RPG Adventure - Developer Guide
 
 ## 📋 Overview
@@ -23,6 +26,7 @@ rpg_game/
 │   ├── save_commands.py       # /save, /load
 │   ├── job_commands.py        # /job, /work, /jobstatus
 │   ├── upgrade_commands.py    # /upgrade
+│   ├── fusion_commands.py     # /fusion
 │   └── cheat_commands.py      # /give, /set, /god
 ├── data/
 │   ├── __init__.py
@@ -109,6 +113,38 @@ Command baru untuk equip item secara langsung.
 - `/use <item_name>` - Equip weapon, armor, atau accessory
 - `/equip <item_name>` - Alternatif command untuk equip
 
+### 4. Fusion System
+Sistem untuk menggabungkan dua item menjadi satu item baru secara acak, dengan kemungkinan hasil yang lebih baik atau lebih buruk tergantung pada `rarity` dan resep fusion.
+
+#### Commands:
+- `/fusion <item1> <item2>` - Gabungkan dua item menjadi satu.
+
+#### Fusion Details:
+- Membutuhkan resep (`FUSION_RECIPES`) yang didefinisikan di `data/game_data.py`.
+- Hasil fusion ditentukan secara acak berdasarkan `chance` dalam resep.
+- Item consumable tidak bisa difusion.
+- Item dengan `durability` bisa digunakan sebagai input fusion.
+
+### 5. Durability System
+Item senjata dan armor kini memiliki `durability` yang menurun saat digunakan dalam pertempuran.
+
+#### Details:
+- Item dengan field `durability` dan `durability_max` di `data/game_data.py`.
+- Stat item (atk/defense) berkurang seiring dengan penurunan `durability`.
+- Jika `durability` mencapai 0, item akan rusak dan otomatis dilepas dari equipment slot.
+- Fungsi `damage_equipped_item` di `Player` mengurangi `durability`.
+
+### 6. New Item Rarities
+Dua rarity baru telah ditambahkan untuk membuat progresi late-game lebih menarik.
+
+#### Rarities:
+- **Transcendent** (warna: Biru Tua / Indigo)
+- **Cosmic** (warna: Ungu Gelap / Navy)
+
+#### Details:
+- Ditambahkan ke `game_data.py` untuk monster, item, crafting, dan quest.
+- Ditambahkan ke `ui_manager.py` untuk sistem pewarnaan otomatis di UI.
+
 ## 📊 Data Structures
 
 ### Monster Format
@@ -137,6 +173,8 @@ Command baru untuk equip item secara langsung.
     "rarity": "common",
     "atk": 10,             # Hanya untuk weapon
     "defense": 5,          # Hanya untuk armor
+    "durability": 100,     # Opsional, untuk sistem durability
+    "durability_max": 100, # Opsional, untuk sistem durability
     "required_job_level": 3 # Opsional, level job minimum untuk menggunakan item
 }
 ```
@@ -149,6 +187,18 @@ Command baru untuk equip item secara langsung.
     "target": "any",       # any, specific_monster_name, level, gold, boss
     "goal": 5,
     "reward": {"gold": 100, "item": "Heal Potion"}
+}
+```
+
+### Fusion Recipe Format
+```python
+{
+    "input": ["Iron Ore", "Iron Ore"],  # Nama item input (harus sesuai)
+    "output_pool": [                    # Pool hasil dengan probabilitas
+        {"item": "Steel Ingot", "chance": 0.6},
+        {"item": "Rusty Sword", "chance": 0.3},
+        {"item": "Iron Sword (Dura)", "chance": 0.1}
+    ]
 }
 ```
 
@@ -172,6 +222,7 @@ Command baru untuk equip item secara langsung.
 - Equipment management
 - Job system integration
 - Upgrade system integration
+- Fusion & Durability integration
 
 ## 🧪 Testing Commands
 Command yang bisa digunakan untuk testing:
@@ -180,6 +231,7 @@ Command yang bisa digunakan untuk testing:
 - `/work` - Lakukan pekerjaan
 - `/upgrade list` - Lihat item yang bisa diupgrade
 - `/use Iron Sword` - Equip senjata
+- `/fusion Iron Ore Iron Ore` - Gabungkan dua item
 - `/give Heal Potion 10` - Tambah item (cheat)
 - `/set level 10` - Set level (cheat)
 - `/god` - Mode dewa (cheat)
@@ -190,12 +242,14 @@ Command yang bisa digunakan untuk testing:
 - Gunakan emoji konsisten untuk feedback visual
 - Simpan progress ke file JSON untuk persistensi
 - Tambahkan kategori saat register command untuk sistem help yang lebih baik
+- Pastikan UI (`ui_manager.py`) diupdate jika ada rarity atau command baru yang mempengaruhi tampilan.
 
 ## 🤝 Contributing
 1. Buat feature branch: `git checkout -b feature/nama-fitur`
 2. Tambahkan command di folder `commands/`
 3. Import di `ui_manager.py`
 4. Update `basic_commands.py` jika perlu menambahkan help
-5. Commit dan push
-6. Buat Pull Request
-```
+5. Update `data/game_data.py` jika menambahkan data baru (item, monster, quest, dll)
+6. Update `README.md` jika menambahkan fitur baru
+7. Commit dan push
+8. Buat Pull Request
